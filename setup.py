@@ -13,6 +13,7 @@ setup(name='inspector',
                     ],
       install_requires=[
             'docopt>=0.6', 
+            'jinja2>=2.7', 
       ], 
       keywords='documentation inspect inspection introspection autodoc sphinx',
       author='Stijn Debrouwere',

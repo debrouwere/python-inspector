@@ -1,29 +1,23 @@
 import sys
 import os
 import importlib
+import jinja2
+
+def property(key):
+    return lambda d: d[key]
+
+def predicate(string):
+    if ':' in string:
+        key, value = string.split(':')
+        return lambda d: d[key] == value
+    else:
+        return property(string)
 
 def isprivate(name):
     if name.startswith('_') and not name == '__init__':
         return True
     else:
         return False
-
-def predicate(str):
-    key, value = str.split(':')
-    return lambda d: d[key] == value
-
-def invert(fn):
-    def inverted_fn(*args):
-        return not fn(*args)
-    return inverted_fn
-
-def any(fns):
-    def satisfy_any(*args):
-        for fn in fns:
-            if fn(*args):
-                return True
-        return False
-    return satisfy_any
 
 def load_path(path):
     directory = os.path.join(os.getcwd(), os.path.dirname(path))
@@ -32,3 +26,7 @@ def load_path(path):
     module = importlib.import_module(name)
     sys.path.pop(0)
     return module
+
+def render(__path, **kwargs):
+    path = os.path.join(os.path.dirname(__file__), __path)
+    return jinja2.Template(open(path).read()).render(**kwargs)

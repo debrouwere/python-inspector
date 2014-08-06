@@ -1,0 +1,17 @@
+# {{ name }}
+
+{{ documentation }}
+
+{% for object in members %}
+### {{ object.type }} {{ object.call }}
+
+{% if object.documentation %}{{ object.documentation }}{% endif %}
+{% if object.members %}
+{% for method in object.members %}
+#### {{ method.call }}
+
+{% if method.documentation %}{{ method.documentation }}{% endif %}
+
+{% endfor %}
+{% endif %}
+{% endfor %}

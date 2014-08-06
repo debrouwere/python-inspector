@@ -5,130 +5,63 @@ When documenting a library or software product written in Python, often
 a README is not enough, but full-blown Sphinx is too much work or too rigid.
 
 Inspect is a command-line tool that will automatically document Python code, 
-but it returns the output as JSON or Markdown so you retain full control of 
-how to render the documentation.
+but it returns the output as machine-readable JSON or human-readable Markdown, 
+so you retain full control of how to render the documentation.
 
 Usage:
     inspect <path> [<object>] [options]
 
 Options:
-    --include <predicates...>
-    --exclude <predicates...>
+    -m --markdown <level>   At what level to start headers.
+    --include <includes>    ...
+    --exclude <excludes>    ...
+
+If you only need a single object documented (whether a function, a class 
+or something else), you can use the <object> argument:
+
+    # will only include documentation on `A`
+    inspect fixtures/example.py A
+
+Filtering the output with `--include` and `--exclude` ensures that your code 
+description only contains exactly what you want it to. Some examples: 
+
+    # only include class methods if they've been documented
+    inspect fixtures/example.py --include members.documented
+    # only include classes
+    inspect fixtures/example.py --include type:class
+    # only document function `factorize` and class `Bean`
+    inspect fixtures/example.py --include name:fun,name:B
+    # only include documented methods on Bean
+    # (these two are identical)
+    inspect fixtures/example.py Bean --include documented
+    inspect fixtures/example.py --include name:Bean,members.documented
+
+As you can see, `.` traverses the hierarchy and `:` is the value to test 
+against. (If you don't specify a value, we will test on presence.)
+
+`,` separates multiple criteria that are OR'ed together.
 
 Todo:
 
 * improve documentation
+* unit test the filtering mechanism
 * fill out missing information in the description JSON (if any)
-* output to Markdown
 * an `intercalate` utility that runs shell commands inside of `%%` tags
   in a file and replaces the tags with the standard output from those
   commands
 """
 
-from docopt import docopt
-import inspect
 import json
+import itertools
+import jinja2
+import docopt
 import utils
-
-def identify(obj, parent=None):
-    name = obj.__name__
-    properties = {
-        'name': name, 
-        'module': inspect.getmodule(obj).__name__, 
-        'documentation': inspect.getdoc(obj), 
-    }
-
-    if hasattr(obj, '__file__'):
-        properties['path'] = obj.__file__.replace('.pyc', '.py')
-
-    if inspect.isclass(obj):
-        properties['type'] = 'class'
-        properties['repr'] = 'class ' + name
-    elif inspect.isfunction(obj):
-        properties['type'] = 'function'
-        properties['repr'] = name
-    elif inspect.ismethod(obj):
-        properties['type'] = 'method'
-        properties['repr'] = '{parent}#{name}'.format(
-            parent=parent['name'], name=name)
-
-    return properties
-
-def describe_function(fn):
-    arguments = []
-    signature = inspect.getargspec(fn)
-    defaults = list(signature.defaults or [])
-
-    for i, name in enumerate(signature.args):
-        left = len(signature.args) - i
-
-        argument = {
-            'name': name, 
-            'repr': name, 
-            'type': 'positional', 
-        }
-
-        if left <= len(defaults):
-            default = defaults.pop()
-            argument['default'] = default
-            argument['repr'] = '{repr}={default}'.format(**argument)
-
-        arguments.append(argument)
-
-    if signature.varargs:
-        arguments.append({
-            'name': signature.varargs, 
-            'repr': '*' + signature.keywords, 
-            'type': 'variable', 
-        })
-
-    if signature.keywords:
-        arguments.append({
-            'name': signature.keywords, 
-            'repr': '**' + signature.keywords, 
-            'type': 'keywords', 
-        })
-
-    return arguments
-
-def describe(obj, parent=None):
-    properties = identify(obj, parent)
-
-    if inspect.isclass(obj) or inspect.ismodule(obj):
-        properties['members'] = [describe(member, properties) 
-            for name, member in inspect.getmembers(obj)
-            if not inspect.isbuiltin(member) and not utils.isprivate(name)]
-
-    if inspect.isclass(obj):
-        has_init = len([member for member in properties['members'] 
-            if member['name'] == '__init__'])
-
-        if has_init:
-            # pop init from the members
-            # (it is listed at the class level instead)
-            init = properties['members'].pop(0)
-            signature = init['signature']
-            properties['call'] =  '{name}({call})'.format(
-                name=properties['name'], call=signature)
-        else:
-            properties['call'] = '{name}()'.format(name=properties['name'])
-    elif inspect.ismethod(obj) or inspect.isfunction(obj):
-        properties['arguments'] = arguments = describe_function(obj)
-
-        # skip self
-        if inspect.ismethod(obj):
-            arguments = arguments[1:]
-
-        properties['signature'] = signature = \
-            ", ".join([argument['repr'] for argument in arguments])
-        properties['call'] = '{name}({signature})'.format(
-            name=properties['name'], signature=signature)
-
-    return properties
-
+import filters
+from describe import describe
 
 def cli():
-    arguments = docopt(__doc__, version='inspect 0.1')
+    arguments = docopt.docopt(__doc__, version='inspect 0.1')
+
     module = utils.load_path(arguments['<path>'])
     if arguments['<object>']:
         module = getattr(module, arguments['<object>'])
@@ -136,13 +69,29 @@ def cli():
 
     include = arguments['--include'] or ''
     exclude = arguments['--exclude'] or ''
-    criteria = (include + ' ' + exclude).strip()
+    criteria = (include + ' ' + exclude).strip().split(',')
+    grouped_criteria = {}
+    for group, values in itertools.groupby(criteria, lambda criterion: len(criterion.split('.'))):
+        grouped_criteria[group] = list(values)
+    global_criteria = filter(bool, grouped_criteria.get(1, []))
+    local_criteria = filter(bool, grouped_criteria.get(2, []))
+    local_criteria = [criterion.split('.') for criterion in local_criteria]
+    grouped_local_criteria = dict(
+        itertools.groupby(local_criteria, lambda criterion: criterion[0]))
 
-    if criteria:
-        includes = map(utils.predicate, criteria.split(' '))
-        matcher = utils.any(includes)
-        if exclude:
-            matcher = utils.invert(matcher)
-        description['members'] = filter(matcher, description['members'])
+    if global_criteria:
+        description['members'] = filters.filter(
+            global_criteria, description['members'], invert=exclude)
 
-    print json.dumps(description, indent=4)
+    if local_criteria:
+        for prop, criteria in grouped_local_criteria.items():
+            criteria = map(lambda criterion: criterion[1], criteria)
+            for obj in description['members']:
+                if prop in obj:
+                    obj[prop] = filters.filter(
+                        criteria, obj[prop], invert=exclude)
+
+    if arguments['--markdown']:
+        print utils.render('markdown.html.j2', **description)
+    else:
+        print json.dumps(description, indent=4)

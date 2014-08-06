@@ -1,24 +1,24 @@
 """ File-level docs. """
 
-class A(object):
-    """ Some docs. """
+class Bean(object):
+    """ Documentation for beans. """
 
     def __init__(self, message):
         pass
 
-    def method(self, a, b=None):
-        """ Docs on A.method """
+    def cook(self, a, b=None):
+        """ Some advice on how to cook a bean. """
         pass
 
-    def overridable(self, x=2):
+    def crush(self, x=2):
         pass
 
-class B(A):
-    def overridable(self, x=4):
+class CoffeeBean(Bean):
+    def cook(self, x=4):
         pass
 
-    def submethod(self, *vargs, **kwargs):
+    def roast(self, *vargs, **kwargs):
         pass
 
-def fun(a, b):
+def factorize(a, b):
     return sum([a, b])
