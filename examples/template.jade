@@ -1,0 +1,25 @@
+html
+    head
+    body
+        h1= name
+        h4= path
+        p= documentation
+        each object in members
+            h3= object.name
+            h4= object.path
+            if object.type == 'class'
+                p= object.module
+                each method in object.members
+                    h4= method.name
+                    p= method.documentation
+                    ul
+                    each argument in method.arguments
+                        li
+                            if argument.type == 'variable'
+                                | *
+                            if argument.type == 'keywords'
+                                | **
+                            = argument.name
+                            if argument.default
+                                | =
+                                = argument.default
