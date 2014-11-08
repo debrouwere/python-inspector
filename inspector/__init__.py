@@ -58,14 +58,17 @@ import docopt
 import utils
 import filters
 from describe import describe
+from annotators import wraps, changes, implements
 
 def cli():
     arguments = docopt.docopt(__doc__, version='inspect 0.1')
 
     module = utils.load_path(arguments['<path>'])
     if arguments['<object>']:
-        module = getattr(module, arguments['<object>'])
-    description = describe(module)
+        obj = getattr(module, arguments['<object>'])
+    else:
+        obj = module
+    description = describe(obj, parent=module, name=arguments['<object>'])
 
     include = arguments['--include'] or ''
     exclude = arguments['--exclude'] or ''

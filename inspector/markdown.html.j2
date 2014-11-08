@@ -3,12 +3,12 @@
 {{ documentation }}
 
 {% for object in members %}
-### {{ object.type }} {{ object.call }}
+### `{{ object.type }} {{ object.call }}`
 
 {% if object.documentation %}{{ object.documentation }}{% endif %}
 {% if object.members %}
 {% for method in object.members %}
-#### {{ method.call }}
+#### `{{ method.call }}`
 
 {% if method.documentation %}{{ method.documentation }}{% endif %}
 

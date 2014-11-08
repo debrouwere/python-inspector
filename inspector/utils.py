@@ -1,6 +1,7 @@
 import sys
 import os
 import importlib
+import re
 import jinja2
 
 def property(key):
@@ -13,11 +14,30 @@ def predicate(string):
     else:
         return property(string)
 
+def find(l, **kwargs):
+    for el in l:
+        def match(item):
+            return el.get(item[0]) == item[1]
+        if all(map(match, kwargs.items())):
+            return el
+    return None
+
+def index(l, test):
+    for i, el in enumerate(l):
+        if test(el):
+            return i
+    return None
+
 def isprivate(name):
     if name.startswith('_') and not name == '__init__':
         return True
     else:
         return False
+
+def unwrap(string):
+    """ Keep double newlines as paragraph markers, 
+    but get rid of any single newlines. """
+    return re.sub(r'([^\n]+)\n', r'\1 ', string)
 
 def load_path(path):
     directory = os.path.join(os.getcwd(), os.path.dirname(path))
