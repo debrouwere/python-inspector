@@ -1,7 +1,7 @@
 import os
 from setuptools import setup, find_packages
 setup(name='inspector',
-      version='0.1.0',
+      version='0.2.0',
       description=("Reads your code and returns a JSON description you can use to generate documentation. Like Sphinx AutoDoc but without Sphinx."),
       #long_description=open('README.rst').read(),
       classifiers=['Development Status :: 4 - Beta',
@@ -17,8 +17,8 @@ setup(name='inspector',
       ], 
       keywords='documentation inspect inspection introspection autodoc sphinx',
       author='Stijn Debrouwere',
-      author_email='stijn@stdout.be',
-      download_url='http://www.github.com/stdbrouw/python-inspector/tarball/master',
+      author_email='stijn@debrouwere.org',
+      download_url='http://www.github.com/debrouwere/python-inspector/tarball/master',
       license='ISC',
       packages=find_packages(),
       entry_points = {
