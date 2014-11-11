@@ -1,17 +1,18 @@
-# {{ name }}
-
 {{ documentation }}
 
 {% for object in members %}
-### `{{ object.type }} {{ object.call }}`
+{{header}} `{{ object.type }} {{ object.call }}`
 
 {% if object.documentation %}{{ object.documentation }}{% endif %}
 {% if object.members %}
 {% for method in object.members %}
-#### `{{ method.call }}`
+{{header}}# `{{object.name}}#{{ method.call }}`
 
 {% if method.documentation %}{{ method.documentation }}{% endif %}
 
 {% endfor %}
 {% endif %}
+
+{% if not loop.last %}---{% endif %}
+
 {% endfor %}

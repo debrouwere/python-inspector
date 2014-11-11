@@ -34,11 +34,6 @@ def isprivate(name):
     else:
         return False
 
-def unwrap(string):
-    """ Keep double newlines as paragraph markers, 
-    but get rid of any single newlines. """
-    return re.sub(r'([^\n]+)\n', r'\1 ', string)
-
 def load_path(path):
     directory = os.path.join(os.getcwd(), os.path.dirname(path))
     name = os.path.basename(os.path.splitext(path)[0])

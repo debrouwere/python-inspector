@@ -7,7 +7,7 @@ def identify(obj, parent=None, name=None):
             'name': name, 
             'identity': obj.__name__, 
             'module': inspect.getmodule(obj).__name__, 
-            'documentation': utils.unwrap(inspect.getdoc(obj) or '') or None, 
+            'documentation': inspect.getdoc(obj), 
         }
     else:
         properties = {

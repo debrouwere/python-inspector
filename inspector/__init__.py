@@ -12,7 +12,7 @@ Usage:
     inspect <path> [<object>] [options]
 
 Options:
-    -m --markdown <level>   At what level to start headers.
+    -m --markdown <level>   At what level to start headers [3].
     --include <includes>    ...
     --exclude <excludes>    ...
 
@@ -95,6 +95,8 @@ def cli():
                         criteria, obj[prop], invert=exclude)
 
     if arguments['--markdown']:
-        print utils.render('markdown.html.j2', **description)
+        root = int(arguments['--markdown'])
+        header = "".join(['#' for level in range(root)])
+        print utils.render('markdown.html.j2', header=header, **description)
     else:
         print json.dumps(description, indent=4)
