@@ -1,5 +1,11 @@
-import __builtin__
-import utils
+from . import utils
+
+# Python 2 and 3 compatibility
+try:
+    import builtins
+except ImportError:
+    import __builtin__ as builtins
+
 
 def invert(fn):
     def inverted_fn(*args):
@@ -19,7 +25,7 @@ def filter(criteria, obj, invert=False):
     matcher = any(includes)
     if invert:
         matcher = invert(matcher)
-    return __builtin__.filter(matcher, obj)
+    return builtins.filter(matcher, obj)
 
 def include(criteria, obj):
     return filter(criteria, obj)

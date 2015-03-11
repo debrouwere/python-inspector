@@ -4,6 +4,7 @@ import importlib
 import re
 import jinja2
 
+
 def property(key):
     return lambda d: d[key]
 
@@ -36,10 +37,12 @@ def isprivate(name):
 
 def load_path(path):
     directory = os.path.join(os.getcwd(), os.path.dirname(path))
+    # TODO: figure out a saner way to do this
+    package = os.path.dirname(path).replace('/', '.')
     name = os.path.basename(os.path.splitext(path)[0])
-    sys.path.insert(0, directory)
-    module = importlib.import_module(name)
-    sys.path.pop(0)
+    #sys.path.insert(0, directory)
+    module = importlib.import_module(path)
+    #sys.path.pop(0)
     return module
 
 def render(__path, **kwargs):

@@ -60,6 +60,7 @@ import filters
 from describe import describe
 from annotators import wraps, changes, implements
 
+
 def cli():
     arguments = docopt.docopt(__doc__, version='inspect 0.1')
 
@@ -97,6 +98,6 @@ def cli():
     if arguments['--markdown']:
         root = int(arguments['--markdown'])
         header = "".join(['#' for level in range(root)])
-        print utils.render('markdown.html.j2', header=header, **description)
+        print(utils.render('markdown.html.j2', header=header, **description))
     else:
-        print json.dumps(description, indent=4)
+        print(json.dumps(description, indent=4))

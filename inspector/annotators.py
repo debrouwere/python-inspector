@@ -1,5 +1,6 @@
 import functools
 
+
 def wraps(wrapped, assigned=functools.WRAPPER_ASSIGNMENTS, updated=functools.WRAPPER_UPDATES, changes=False):
     def wrapper(fn):
         if not hasattr(fn, '__wraps__'):

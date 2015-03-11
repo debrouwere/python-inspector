@@ -1,12 +1,14 @@
 import inspect
-import utils
+from . import utils
+
 
 def identify(obj, parent=None, name=None):
     if hasattr(obj, '__name__'):
         properties = {
             'name': name, 
             'identity': obj.__name__, 
-            'module': inspect.getmodule(obj).__name__, 
+            # TODO: look for a better solution
+            'module': getattr(inspect.getmodule(obj), '__name__', ''), 
             'documentation': inspect.getdoc(obj), 
         }
     else:
