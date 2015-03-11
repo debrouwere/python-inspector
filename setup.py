@@ -1,7 +1,7 @@
 import os
 from setuptools import setup, find_packages
 setup(name='inspect-it',
-      version='0.3.1',
+      version='0.3.2',
       description=("Reads your code and returns a JSON description you can use to generate documentation. Like Sphinx AutoDoc but without Sphinx."),
       #long_description=open('README.rst').read(),
       classifiers=['Development Status :: 4 - Beta',
