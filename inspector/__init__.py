@@ -55,10 +55,10 @@ import json
 import itertools
 import jinja2
 import docopt
-import utils
-import filters
-from describe import describe
-from annotators import wraps, changes, implements
+from . import utils
+from . import filters
+from .describe import describe
+from .annotators import wraps, changes, implements
 
 
 def cli():
